@@ -1,4 +1,4 @@
-# VanityContractAddresses
+# Vanity Addresses for Contracts!
 
 A simple node (but pretty much vanilla js) script that finds vanity contract addresses by generating *x* key-pairs and checking each of their first *y* nonces until the desired result is found. This is an extention of a script I originally wrote as part of the [Delfi](http://github.com/nicholashc/Delfi) project at EthDenver 2019.
 
