@@ -8,7 +8,7 @@ Ethereum contracts made with the `create` opcode are deterministic (`create2` to
 
 ### Install and Run
 
-`git clone https://github.com/nicholashc/VanityContractAddresses.git`
+`git clone https://github.com/nicholashc/VanityContract.git`
 
 `cd` into the directory.
 
@@ -23,15 +23,15 @@ Ethereum contracts made with the `create` opcode are deterministic (`create2` to
 This odd-ball basket of dependancies is mostly vestigial from the quick-and-dirty hackathon origins of this script. They likely can and will be replaced/consolidated entirely with `ethereumjs-util` or similar. They are used in the following ways:
 
 `web3`: Checking address validity and performing checksum conversions
-`rlp`: Rlp encoding in a way that plays nice with ethereum formats
-`keccak`: Reliable hashing because "keccak" seems to mean something different in every module (many web3 versions even give different results for `Sha3` vs `Solidity.Sh3` vs external implementations of the same hash function)
+`rlp`: Rlp encoding in a way that plays nice with Ethereum formats
+`keccak`: Reliable hashing because "keccak" is hard to pin down (eg, versions of web3js `Sha3` vs web3js `Solidity.Sh3` vs `keccak` or `keccak256` or `sha3` functions elsewhere all give different results)
 `secp256k1`: Convert a private key to a public key
 `randombytes`: Generate a pseudo-random seed for a valid ethereum private key (**note: not validated for secure randomness***). Feel free to replace this with any other prandom/random source that spits out 32 bytes of hex
 `chalk`: Pretty(-ish) printing in the console. This is purely an aesthetic dependancy and can be removed/customized without affecting functionality
 
 ### Parameters
 
-There are reasonable defaults set that should return results in "normal" searches for a ~1-8 char vanity prefixes. Certain hard limits enforce reasonable ranges for these inputs. Of course, you can override any of this by directly changing/removing limits in the vain.js file.
+There are reasonable defaults set to return results in "normal" searches for a ~1-8 char vanity prefixes. Certain hard limits enforce reasonable ranges for all inputs. Of course, you can override any of this by directly changing/removing limits in the `vain.js` file.
 
 ###### Required
 
