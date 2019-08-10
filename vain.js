@@ -51,7 +51,7 @@ const validateInput = (inp) => {
     }
 
     if (count > 1) {
-        //naive way to check validitiy of additional arguments 
+        //naive way to check validity of additional arguments 
         //relies on correct sequencing of arguments
         //these methods all do a type conversion, check validity, and update if valid
         //invalid inputs fallback on the default and do not throw an error
@@ -155,16 +155,16 @@ const mineVanity = (inp) => {
     //calc this only once
     let length = vanity.length;
     
-    //flag for successful complition
+    //flag for successful completion
     let addressFound = false;
         
-    //outerloop that incremenets 1 every searchDepth
+    //outer loop that increments 1 every searchDepth
     for (let j = 0; j < inp.searchDepth; j++) {
 
-        //generate a new keypair in each loop
+        //generate a new key-pair in each loop
         let a = getRandomWallet();
         
-        //inner loop that runs to nonceDepth for each keypair in j
+        //inner loop that runs to nonceDepth for each key-pair in j
         for (let i = 0; i < inp.nonceDepth; i++) {
             //note: current nonce is always i
 
@@ -205,7 +205,7 @@ const mineVanity = (inp) => {
                 break
             }
         }
-        //break out of outter look
+        //break out of outer look
         if (addressFound === true) {
             break
         }
