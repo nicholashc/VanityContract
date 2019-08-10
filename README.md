@@ -22,7 +22,7 @@ Ethereum contracts made with the `create` opcode are deterministic (`create2` to
 
 This odd-ball basket of dependancies is mostly vestigial from the quick-and-dirty hackathon origins of this script. They likely can and will be replaced/consolidated entirely with `ethereumjs-util` or similar. They are used in the following ways:
 
-`web3`: Checking address validity and performing checksum conversions
+`web3-utils`: Checking address validity and performing checksum conversions
 `rlp`: Rlp encoding in a way that plays nice with Ethereum formats
 `keccak`: Reliable hashing because "keccak" is hard to pin down (eg, versions of web3js `Sha3` vs web3js `Solidity.Sh3` vs `keccak` or `keccak256` or `sha3` functions elsewhere all give different results)
 `secp256k1`: Convert a private key to a public key

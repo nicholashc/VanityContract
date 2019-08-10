@@ -1,4 +1,4 @@
-const Web3 = require('web3');
+const web3 = require('web3-utils');
 const rlp = require('rlp');
 const keccak = require('keccak');
 const secp256k1 = require('secp256k1');
@@ -173,7 +173,7 @@ const mineVanity = (inp) => {
 
             //add checksum if flagged, remove 0x
             if (inp.caseOn) {
-                cAddr = Web3.utils.toChecksumAddress(cAddr)
+                cAddr = web3.toChecksumAddress(cAddr)
                     .slice(2)
             }
 
@@ -189,8 +189,8 @@ const mineVanity = (inp) => {
                 resultHandler({
                     DEPTH: (j * inp.nonceDepth) + i,
                     GOAL: vanity,
-                    CONTRACT: Web3.utils.toChecksumAddress(cAddr),
-                    ADDRESS: Web3.utils.toChecksumAddress(a.addr),
+                    CONTRACT: web3.toChecksumAddress(cAddr),
+                    ADDRESS: web3cd .toChecksumAddress(a.addr),
                     PRIVKEY: a.priv,
                     NONCE: i,
                     FOUND: "success! save this result and use to deploy your vanity contract"

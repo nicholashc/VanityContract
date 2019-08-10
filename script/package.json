@@ -1,27 +1,23 @@
 {
-  "name": "vanitycontractaddresses",
+  "name": "VanityContract",
   "version": "1.0.0",
-  "description": "generates vanity contract addresses by creating addresses and checking their first x nonces",
-  "main": "vanityContract.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "description": "vanity addresses for ethereum contracts",
+  "main": "vain.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nicholashc/VanityContractAddresses.git"
+    "url": "git+https://github.com/nicholashc/VanityContract.git"
   },
-  "author": "",
-  "license": "ISC",
+  "license": "UNLICENSED",
   "bugs": {
-    "url": "https://github.com/nicholashc/VanityContractAddresses/issues"
+    "url": "https://github.com/nicholashc/VanityContract/issues"
   },
-  "homepage": "https://github.com/nicholashc/VanityContractAddresses#readme",
+  "homepage": "https://github.com/nicholashc/VanityContract#readme",
   "dependencies": {
     "chalk": "^2.4.2",
     "keccak": "^2.0.0",
     "randombytes": "^2.1.0",
     "rlp": "^2.2.3",
     "secp256k1": "^3.7.1",
-    "web3": "^1.2.1"
+    "web3-utils": "^1.2.1"
   }
 }
