@@ -26,12 +26,12 @@ This odd-ball basket of dependancies is mostly vestigial from the quick-and-dirt
 `rlp`: Rlp encoding in a way that plays nice with Ethereum formats
 `keccak`: Reliable hashing because "keccak" is hard to pin down (eg, versions of web3js `Sha3` vs web3js `Solidity.Sh3` vs `keccak` or `keccak256` or `sha3` functions elsewhere all give different results)
 `secp256k1`: Convert a private key to a public key
-`randombytes`: Generate a pseudo-random seed for a valid ethereum private key (**note: not validated for secure randomness***). Feel free to replace this with any other prandom/random source that spits out 32 bytes of hex
-`chalk`: Pretty(-ish) printing in the console. This is purely an aesthetic dependancy and can be removed/customized without affecting functionality
+`randombytes`: Generate a pseudo-random seed for a valid ethereum private key (**note: not validated for secure randomness**). Feel free to replace this with any other prandom/random source that spits out 32 bytes of hex
+`chalk`: Pretty(-ish) printing in the console. This is purely an aesthetic dependancy and can be removed/customized without affecting functionality.
 
 ### Parameters
 
-There are reasonable defaults set to return results in "normal" searches for a ~1-8 char vanity prefixes. Certain hard limits enforce reasonable ranges for all inputs. Of course, you can override any of this by directly changing/removing limits in the `vain.js` file.
+There are reasonable defaults set to return results in "normal" searches for a 1-8 char vanity prefixes. Certain hard limits enforce reasonable ranges for all inputs. Of course, you can override any of this by directly changing/removing limits in the `vain.js` file.
 
 ###### Required
 
@@ -57,16 +57,16 @@ While the following values are optional, for now you need pass the full set of a
 - Default: `1000000`
 - Note: this is mainly a mechanism to cap never-ending processes during testing or in the case of malformed inputs
 
-3) `showProgress`
+3) `logOn`
 - Displays the most recent result, wether it matches the input, the current search depth, and the current nonce depth
-- Valid input: `y` or `yes` to enable || `n` or `no` to disable
-- Default: `y` 
+- Valid input: `y` or `yes` or `true` to enable || `n` or `no` or `false` to disable
+- Default: `true` 
 - Note: this is useful for validating everything working with a short search for one or two character letter prefixes (and fun to watch). However, all these `console.log()` operations *really slow down* performance.
 
-4) `caseSensitive`
+4) `caseOn`
 - Capital hex letters in your input are considered and matched against checksummed addresses
-- Valid input: `y` or `yes` to enable || `n` or `no` to disable
-- Default: `y`
+- Valid input: `y` or `yes` or `true` to enable || `n` or `no` or `false` to disable
+- Default: `true` 
 - Notes if disabled:
   - You can still input capital hex characters but they are treated as lowercase
   - Search is faster but disregards checksums (eg, in a search for `1DAD`: `0x1dad...`, `0x1daD...`, etc are all valid)  
@@ -82,12 +82,11 @@ If/when a valid result is found. The following will be returned to your console 
 `GOAL`: The prefix target you gave as input
 `CONTRACT`: The checksummed address of the contract, if deployed at the specific nonce/address combo
 `ADDRESS`: The checksummed address required to deploy this contract
-`KEY`: Private key for this address **note: in plain text!** 
+`PRIVKEY`: Private key for this address **note: in plain text!** 
 `NONCE`: The magic nonce you must use to deploy your vanity contract
-`MSG`: a reminder of the above
-`WARNING`: a reminder to save the results somewhere secure as nothing is written by this script to a file. (Note: forms of this output may still leave traces in bash history logs, other programs that can access to your stdout, etc).
+`FOUND`: a reminder to save the results somewhere secure as no file is written by this script. (Note: forms of this output may still leave traces in bash history logs, other programs that can access to your stdout, etc).
 
-If the max searchDepth is reached before finding a valid result or if another error happens, a mildly-useful error message will be returned to your console. This readme is a better resource for troubleshooting.
+If the max searchDepth is reached before finding a valid result or if another error happens, the program will end execution. This readme is best resource for troubleshooting.
 
 ### Troubleshooting
 
@@ -115,7 +114,7 @@ Even low spec consumer machines should be able to find valid 4 character prefixe
 
 Making node/javascript do synchronous cpu intensive work is pretty inefficient (and probably dumb in general). Someone else has likely written a similar program with parallelization, gpu/asic integration, or in a language better suited to hashing and evaluating huge data sets.
 
-### Future Updates
+### Future_Updates
 
 - refactor to eliminate redundant methods, mixed js syntax styles, general sloppiness
 - consolidate dependancies to use `ethereumjs-util` or some other package with all required functionality
@@ -131,7 +130,7 @@ I make no guarantees about the security or randomness of the key-pairs generated
 
 ### License 
 
-This software is licensed under the *yolo* licence: use, modify, distribute, etc freely without restriction. Do whatever you want. However, I make no guarantees and accept no responsibility for anything, including: performance, results, security, answering questions prompty or at all, implementing any of the [future updates](#Future Updates), etc.
+This software is licensed under the *yolo* licence: use, modify, distribute, etc freely without restriction. Do whatever you want. However, I make no guarantees and accept no responsibility for anything, including: performance, results, security, answering questions prompty or at all, implementing any of the [future updates](#Future_Updates), etc.
 
 Note: the *yolo* license is also licensed under the *yolo* license.
 

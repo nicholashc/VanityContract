@@ -1,8 +1,3 @@
-//todo:
-//add custom flags
-//add help argument
-//suffix mode
-
 const Web3 = require('web3');
 const rlp = require('rlp');
 const keccak = require('keccak');
@@ -12,80 +7,89 @@ const chalk = require('chalk');
 
 //defaults values
 const userDefaults = {
-    vanity: "dead",
+    vanity: "",
     nonceDepth: 10,
     searchDepth: 1000000,
-    showProgress: true,
-    caseSensitive: true
+    logOn: true,
+    caseOn: true
 }
 
 //initialize env and get input
+//note: web connection not actually needed just the utils
 web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
 
-//cli input
+//parse user cli input
 let userArgsRaw = process.argv.slice(2)
 
 //process input
 const validateInput = (inp) => {
-
+    //create user object initialized with defaults
     let u = userDefaults
     let count = userArgsRaw.length
-
+    
+    //hacky way to deal with argument parsing
     if (count === 0) {
+        //fallback on default message
         errorHandler(WELCOME)
     } else if (count > 5) {
         errorHandler(ERROR.NULL)
-    }
+    } 
 
-    //naive wait to handle args, use flags instead
-    if (count > 0) {
-        let v = userArgsRaw[0].toString();
-        if (v === "" || v === "-h") {
-            errorHandler(WELCOME)
-        } else {
-            if (v[0] + v[1] === "0x") {
-                v = v.slice(2)
-                checkVanity(v)
-            }
-            u.vanity = v;
+
+    let v = userArgsRaw[0].toString();
+    if (v === "" || v === null || v === undefined) {
+        errorHandler(WELCOME)
+    } else {
+        //remove 0x if included
+        if (v[0] + v[1] === "0x") {
+            v = v.slice(2)
+            //check validity of input
+            checkVanity(v)
         }
+        //update user object once validated
+        u.vanity = v;
     }
 
     if (count > 1) {
+        //naive way to check validitiy of additional arguments 
+        //relies on correct sequencing of arguments
+        //these methods all do a type conversion, check validity, and update if valid
+        //invalid inputs fallback on the default and do not throw an error
+    
         let n = Number(userArgsRaw[1])
-        if (n > 0 && n < 100 && typeof(n) === "number") {
+        if (n > 0 && n < 100) {
             u.nonceDepth = n;
         }
-    }
+    
 
-    if (count > 2) {
-        s = Number(userArgsRaw[2])
-        if (s > 1 && typeof(s) === "number") {
-            u.searchDepth = s;
+        if (count > 2) {
+            s = Number(userArgsRaw[2])
+            if (s > 1) {
+                u.searchDepth = s;
+            }
+        }
+
+        if (count > 3) {
+            a = userArgsRaw[3].toString()
+            if (a === "n" || a === "no" || a === "false") {
+                u.logOn = false;
+            }
+        }
+
+        if (count > 4) {
+            y = userArgsRaw[4].toString()
+            if (y === "n" || y === "no" || y === "false") {
+                u.caseOn = false;
+            }
         }
     }
-
-    if (count > 3) {
-        a = Number(userArgsRaw[3])
-        if (a === "n" || a === "no" || a === "false") {
-            u.showProgress = false;
-        }
-    }
-
-    if (count > 4) {
-        y = userArgsRaw[4].toString()
-        if (y === "n" || y === "no" || y === "false") {
-            u.caseSensitive = false;
-        }
-    }
-
+    //begin search
     mineVanity(u)
 }
 
+//all cases result in an error message if invalid or a return if valid
 const checkVanity = (inp) => {
-    if (inp === "" || inp === null || inp === undefined) {
-        errorHandler(WELCOME)
-    } else if (inp.length > 40) {
+    if (inp.length > 40) {
         errorHandler(ERROR.INVALID)
     } else {
         let valid = /[a-fA-F0-9]/g;
@@ -98,7 +102,9 @@ const checkVanity = (inp) => {
     }
 }
 
-//consolotate these methods
+
+//methods to style output
+//should be consolidated into one general method
 const replaceBlue = (inp) => {
     return chalk.blue(inp)
 }
@@ -111,6 +117,8 @@ const replaceCode = (inp) => {
     return chalk.bold(inp)
 }
 
+//methods to handle and style results/errors then end execution
+//should be consolidated into one general method
 const resultHandler = (obj) => {
     let res = eval(obj)
     let json = JSON.stringify(res, null, 2)
@@ -130,84 +138,87 @@ const errorHandler = (obj) => {
     let parse = code.replace(/[{}",`]/g, '')
 
     console.log(parse)
-    process.exit(0)
+    process.exit(1)
 }
 
-//mining begins
+//main search logic
 const mineVanity = (inp) => {
-
+    
+    //handle local instance of target 
     let vanity = inp.vanity;
-    let mxNonce = inp.nonceDepth;
-    let mxLoop = inp.searchDepth;
-    let logOn = inp.showProgress;
-    let caseOn = inp.caseSensitive;
 
-    let addressFound = false;
-
-    if (!caseOn) {
+    if (!inp.caseOn) {
+        //treat all input as lowercase
         vanity = vanity.toLowerCase()
     }
 
-    for (let j = 0; j < mxLoop; j++) {
+    //calc this only once
+    let length = vanity.length;
+    
+    //flag for successful complition
+    let addressFound = false;
+        
+    //outerloop that incremenets 1 every searchDepth
+    for (let j = 0; j < inp.searchDepth; j++) {
 
-        for (let i = 0; i < mxNonce; i++) {
+        //generate a new keypair in each loop
+        let a = getRandomWallet();
+        
+        //inner loop that runs to nonceDepth for each keypair in j
+        for (let i = 0; i < inp.nonceDepth; i++) {
+            //note: current nonce is always i
 
-            let keyPair = getRandomWallet();
-            let a = {
-                addr: keyPair.address,
-                priv: keyPair.privKey,
-                nonce: web3.utils.toHex(i)
-            }
-
-            let input_arr = [a.addr, a.nonce];
-            let rlp_encoded = rlp.encode(input_arr);
-            let pubKey = keccak('keccak256')
+            //calculate the contract address created by this address/nonce
+            let rlp_encoded = rlp.encode([a.addr, i]);
+            let cAddr = keccak('keccak256')
                 .update(rlp_encoded)
-                .digest('hex');
-            let cAddr = pubKey.substring(24);
-            let length = vanity.length
-            cAddr = Web3.utils.toChecksumAddress(cAddr)
-
-            if (!caseOn) {
-                cAddr = cAddr.toLowerCase()
+                .digest()
+                .slice(-20)
+                .toString('hex')
+            
+            //add checksum if flagged, remove 0x
+            if (inp.caseOn) {
+                cAddr = Web3.utils.toChecksumAddress(cAddr).slice(2)
             }
-
-            if (logOn === true) {
-                console.log(j, i, cAddr.slice(0, length + 2)
-                    .concat("..."));
+        
+            //display running log of results if default is on
+            if (inp.logOn) {
+                console.log(j, i, "0x"+cAddr.slice(0, length)+"...");
             }
+            
+            //compare slice of result with target
+            if (cAddr.slice(0, length) === vanity) {
 
-            if (cAddr.slice(2, length + 2) === vanity) {
-                let cSum = Web3.utils.toChecksumAddress(cAddr)
-                let aSum = Web3.utils.toChecksumAddress(a.addr)
+                //feed findings to the resultHandler method for formating
                 resultHandler({
-                    DEPTH: (j * mxNonce) + i,
-                    GOAL: inp.vanity,
-                    CONTRACT: cSum,
-                    ADDRESS: aSum,
-                    KEY: a.priv,
+                    DEPTH: (j * inp.nonceDepth) + i,
+                    GOAL: vanity,
+                    CONTRACT: Web3.utils.toChecksumAddress(cAddr),
+                    ADDRESS: Web3.utils.toChecksumAddress(a.addr),
+                    PRIVKEY: a.priv,
                     NONCE: i,
-                    MSG: "vanity prefix found! make sure to deploy your contract at this nonce, from this address"
+                    FOUND: "success! save this result and use to deploy your vanity contract"
                 });
+                
+                //set flag and break out of inner loop
                 addressFound = true
                 break
-                return true
             }
         }
-
+        //break out of outter look
         if (addressFound === true) {
             break
         }
     }
-
+    //handle situation where loops complete without finding a result
     if (!addressFound) {
         errorHandler("ERROR.NULL");
     } else {
-        process.exit(1)
+        process.exit(0)
     }
 }
 
-//address utils
+//key pair utils
 const privateToAddress = (privateKey) => {
     const publicKey = secp256k1.publicKeyCreate(privateKey, false)
         .slice(1);
@@ -221,19 +232,18 @@ const privateToAddress = (privateKey) => {
 const getRandomWallet = () => {
     const randbytes = randomBytes(32);
     return {
-        address: ("0x" + privateToAddress(randbytes)
-            .toString('hex')),
-        privKey: randbytes.toString('hex')
+        addr: ("0x" + privateToAddress(randbytes)),
+        priv: randbytes.toString('hex')
     };
 };
 
 //messages
 const WELCOME = {
-    ABOUT: "mine a key that will produce a vanity contract prefix if deployed at a specific nonce",
-    VANITY: "0xad13... at nonce 4 will create a contract beginning with 0xbeef...",
-    START: "try an example like: `node vain 12` or `node vain 0xbabe`",
-    ARGS: "required: [vanity_prefix] optional: [max_nonce] [search_depth] [show_log] [case_sensitive]",
-    TRY: "`node vain 0xdad 10 1000000 y n`"
+    ABOUT: "mine a key/nonce that will produce a vanity contract prefix",
+    EG: "0xad13... at nonce 4 will create a contract with 0xbeef...",
+    START: "try an example like: `node vain aa` or `node vain 0xbabe`",
+    ARGS: "required: [vanity] optional: [nonceDepth] [searchDepth] [showLog] [caseOn]",
+    EXAMPLE: "`node vain 0xdad 10 1000000 y n`"
 }
 
 const ERROR = {
@@ -241,4 +251,5 @@ const ERROR = {
     NULL: "no valid address found. try a larger search area"
 }
 
+//trigger to start based on console input
 validateInput(userArgsRaw)
