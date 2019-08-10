@@ -14,10 +14,6 @@ const userDefaults = {
     caseOn: true
 }
 
-//initialize env and get input
-//note: web connection not actually needed just the utils
-web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
-
 //parse user cli input
 let userArgsRaw = process.argv.slice(2)
 
@@ -26,17 +22,17 @@ const validateInput = (inp) => {
     //create user object initialized with defaults
     let u = userDefaults
     let count = userArgsRaw.length
-    
+
     //hacky way to deal with argument parsing
     if (count === 0) {
         //fallback on default message
         errorHandler(WELCOME)
     } else if (count > 5) {
-        errorHandler(ERROR.NULL)
-    } 
-
+        errorHandler("ERROR.NULL")
+    }
 
     let v = userArgsRaw[0].toString();
+
     if (v === "" || v === null || v === undefined) {
         errorHandler(WELCOME)
     } else {
@@ -50,17 +46,16 @@ const validateInput = (inp) => {
         u.vanity = v;
     }
 
+    //only consider optional arguments if they exist
     if (count > 1) {
-        //naive way to check validity of additional arguments 
-        //relies on correct sequencing of arguments
-        //these methods all do a type conversion, check validity, and update if valid
-        //invalid inputs fallback on the default and do not throw an error
-    
+        //this method relies on correct sequencing of inputs
+        //for all: type conversion, check validity, update if valid
+        //invalid inputs keep the default value and do not throw an error
+
         let n = Number(userArgsRaw[1])
         if (n > 0 && n < 100) {
             u.nonceDepth = n;
         }
-    
 
         if (count > 2) {
             s = Number(userArgsRaw[2])
@@ -83,25 +78,24 @@ const validateInput = (inp) => {
             }
         }
     }
-    //begin search
+    //begin search and pass validated user object
     mineVanity(u)
 }
 
 //all cases result in an error message if invalid or a return if valid
 const checkVanity = (inp) => {
     if (inp.length > 40) {
-        errorHandler(ERROR.INVALID)
+        errorHandler("ERROR.INVALID")
     } else {
         let valid = /[a-fA-F0-9]/g;
         let res = inp.match(valid);
         if (res.length === inp.length) {
             return
         } else {
-            errorHandler(ERROR.INVALID)
+            errorHandler("ERROR.INVALID")
         }
     }
 }
-
 
 //methods to style output
 //should be consolidated into one general method
@@ -120,8 +114,8 @@ const replaceCode = (inp) => {
 //methods to handle and style results/errors then end execution
 //should be consolidated into one general method
 const resultHandler = (obj) => {
-    let res = eval(obj)
-    let json = JSON.stringify(res, null, 2)
+    //already passed as obj
+    let json = JSON.stringify(obj, null, 2)
     let color = json.replace(/[A-Za-z0-9:!]/g, replaceGreen)
     let code = color.replace(/`(.*?)`/g, replaceCode)
     let parse = code.replace(/[{}",`]/g, '')
@@ -130,9 +124,10 @@ const resultHandler = (obj) => {
     process.exit(0)
 }
 
-const errorHandler = (obj) => {
-    let res = eval(obj)
-    let json = JSON.stringify(res, null, 2)
+const errorHandler = (str) => {
+    //convert path from str to nested obj
+    let obj = eval(str)
+    let json = JSON.stringify(obj, null, 2)
     let color = json.replace(/[A-Z]/g, replaceBlue)
     let code = color.replace(/`(.*?)`/g, replaceCode)
     let parse = code.replace(/[{}",`]/g, '')
@@ -143,7 +138,7 @@ const errorHandler = (obj) => {
 
 //main search logic
 const mineVanity = (inp) => {
-    
+
     //handle local instance of target 
     let vanity = inp.vanity;
 
@@ -154,16 +149,16 @@ const mineVanity = (inp) => {
 
     //calc this only once
     let length = vanity.length;
-    
+
     //flag for successful completion
     let addressFound = false;
-        
+
     //outer loop that increments 1 every searchDepth
     for (let j = 0; j < inp.searchDepth; j++) {
 
         //generate a new key-pair in each loop
         let a = getRandomWallet();
-        
+
         //inner loop that runs to nonceDepth for each key-pair in j
         for (let i = 0; i < inp.nonceDepth; i++) {
             //note: current nonce is always i
@@ -175,17 +170,18 @@ const mineVanity = (inp) => {
                 .digest()
                 .slice(-20)
                 .toString('hex')
-            
+
             //add checksum if flagged, remove 0x
             if (inp.caseOn) {
-                cAddr = Web3.utils.toChecksumAddress(cAddr).slice(2)
+                cAddr = Web3.utils.toChecksumAddress(cAddr)
+                    .slice(2)
             }
-        
+
             //display running log of results if default is on
             if (inp.logOn) {
-                console.log(j, i, "0x"+cAddr.slice(0, length)+"...");
+                console.log(j, i, "0x" + cAddr.slice(0, length) + "...");
             }
-            
+
             //compare slice of result with target
             if (cAddr.slice(0, length) === vanity) {
 
@@ -199,13 +195,13 @@ const mineVanity = (inp) => {
                     NONCE: i,
                     FOUND: "success! save this result and use to deploy your vanity contract"
                 });
-                
+
                 //set flag and break out of inner loop
                 addressFound = true
                 break
             }
         }
-        //break out of outer look
+        //break out of outer loop
         if (addressFound === true) {
             break
         }
