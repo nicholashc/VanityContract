@@ -10,7 +10,7 @@ Ethereum contracts made with the `create` opcode are deterministic (`create2` to
 
 `git clone https://github.com/nicholashc/VanityContract.git`
 
-`cd` into the directory.
+`cd VanityContract/script/`
 
 `node vain` returns a welcome message.
 
